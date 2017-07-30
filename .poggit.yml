@@ -1,0 +1,11 @@
+--- # Poggit-CI Manifest. Open the CI at https://poggit.pmmp.io/ci/FaigerSYS/MapImageEngine
+branches:
+- master
+projects:
+  MIE_Converter:
+    path: MIE_Converter/source/
+  MIE_Protector:
+    path: MIE_Protector/source/
+  MapImageEngine:
+    path: MapImageEngine/source/
+...
