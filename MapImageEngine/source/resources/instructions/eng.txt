@@ -5,7 +5,7 @@ If you found a bug, please let me know! Submit new issue on GitHub
 
 Как сделать свою картинку:
   1. Convert any image ('png', 'jpg' etc.)...
-	  - Using MIE_Converter plugin: https://github.com/FaigerSYS/MapImageEngine/MIE_Converter
+	  - Using MIE_Converter plugin: https://github.com/FaigerSYS/MapImageEngine/tree/master/MIE_Converter
 	  - Using online converter (if the plugin not works): http://mie-converter.ml
   1.1. You do not need to change image size to 128x128 . Converter itself will change the size
   1.2. You do not neet to chunk image. Just select needed size in blocks
