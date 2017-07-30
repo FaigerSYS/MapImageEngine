@@ -1,0 +1,12 @@
+name: MIE_Protector
+main: FaigerSYS\MIE_Protector\MIE_Protector
+version: "1.0.2"
+api: ["2.0.0", "3.0.0", "3.0.0-ALPHA1", "3.0.0-ALPHA2", "3.0.0-ALPHA3", "3.0.0-ALPHA4", "3.0.0-ALPHA5", "3.0.0-ALPHA6", "3.0.0-ALPHA7"]
+load: POSTWORLD
+author: FaigerSYS
+description: "Addon for MapImageEngine to protect the image (frame) from rotation and destruction"
+
+permissions:
+  mapimageengine.bypassprotect:
+    default: op
+    description: "Bypass image protection"
