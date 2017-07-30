@@ -2,10 +2,13 @@
 branches:
 - master
 projects:
-  MIE_Converter:
-    path: MIE_Converter/source/
-  MIE_Protector:
-    path: MIE_Protector/source/
   MapImageEngine:
     path: MapImageEngine/source/
+    icon: MapImageEngine/icon.png
+  MIE_Protector:
+    path: MIE_Protector/source/
+    icon: MIE_Protector/icon.png
+  MIE_Converter:
+    path: MIE_Converter/source/
+    icon: MIE_Converter/icon.png
 ...
