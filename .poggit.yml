@@ -4,11 +4,11 @@ branches:
 projects:
   MapImageEngine:
     path: MapImageEngine/source/
-    icon: icon.png
+    icon: /MapImageEngine/icon.png
   MIE_Protector:
     path: MIE_Protector/source/
-    icon: icon.png
+    icon: /MIE_Protector/icon.png
   MIE_Converter:
     path: MIE_Converter/source/
-    icon: icon.png
+    icon: /MIE_Converter/icon.png
 ...
