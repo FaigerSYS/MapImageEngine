@@ -7,8 +7,10 @@ use pocketmine\Player;
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
 
-use pocketmine\command\Command;
+use pocketmine_backtrace\Command;
 use pocketmine\command\PluginIdentifiableCommand;
+
+use pocketmine\plugin\Plugin;
 
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -36,7 +38,7 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 		$this->setPermission('mapimageengine');
 	}
 	
-	public function execute(CommandSender $sender, $label, array $args) {
+	public function onExecute(CommandSender $sender, string $label, array $args) {
 		if (!$this->testPermission($sender)) {
 			return;
 		}
@@ -275,7 +277,7 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 		}
 	}
 	
-	public function getPlugin() {
+	public function getPlugin() : Plugin {
 		return MapImageEngine::getInstance();
 	}
 	

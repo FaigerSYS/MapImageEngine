@@ -86,7 +86,7 @@ class MapInfoRequestPacket extends ' . $dp_class . '{
 	}
 
 	public function encode(){
-		// 
+		
 	}
 
 	' . ($ns_class ? 'public function handle(' . $ns_class . ' $session) : bool { return true; }' : '') . '
