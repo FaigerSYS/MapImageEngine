@@ -1,4 +1,4 @@
-# MapImageEngine
+# MapImageEngine ![MapImageEngine](https://poggit.pmmp.io/ci.badge/FaigerSYS/MapImageEngine/MapImageEngine)
 
 Plugin that allows you to add full-color images to your server!</br>
 Instructions: [click here](https://github.com/FaigerSYS/MapImageEngine/tree/master/MapImageEngine/source/resources/instructions)!
