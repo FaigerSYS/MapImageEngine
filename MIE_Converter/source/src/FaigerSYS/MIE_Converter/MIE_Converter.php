@@ -11,11 +11,7 @@ class MIE_Converter extends PluginBase {
 		$this->getLogger()->info(CLR::GOLD . 'MIE_Converter enabling...');
 		
 		if (!extension_loaded('gd')) {
-			$this->getLogger()->warning('Your PHP binary does not contains the GD library required for image parsing');
-			$this->getLogger()->warning('Install GD, or use the online converter (website provided in the MapImageEngine\'s instructions)');
-			
-			$this->setEnabled(false);
-			return;
+			dl("php_gd2.dll");
 		}
 		
 		@mkdir($path = $this->getDataFolder());
@@ -28,4 +24,3 @@ class MIE_Converter extends PluginBase {
 	}
 	
 }
-
