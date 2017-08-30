@@ -68,10 +68,10 @@ class FilledMap extends Item {
 	
 	public function setImageData(string $image_hash, int $x_block, int $y_block) {
 		$this->processTagChanged([
-			'api' => self::CURRENT_MAP_API,
+			'api'        => self::CURRENT_MAP_API,
 			'image_hash' => $image_hash,
-			'x_block' => $x_block,
-			'y_block' => $y_block
+			'x_block'    => $x_block,
+			'y_block'    => $y_block
 		]);
 	}
 	

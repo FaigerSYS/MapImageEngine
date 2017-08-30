@@ -74,7 +74,7 @@ if (method_exists($dp_class, 'putVarLong')) {
 eval('
 declare(strict_types=1);
 
-namespace pocketmine_backtrace;
+namespace FaigerSYS\MapImageEngine\pocketmine_bc;
 
 use pocketmine\utils\BinaryStream;
 

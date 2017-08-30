@@ -9,7 +9,7 @@ use pocketmine\utils\Binary;
 use pocketmine\network\mcpe\protocol\BatchPacket as BatchPacket_1;
 use pocketmine\network\protocol\BatchPacket as BatchPacket_2;
 
-use pocketmine_backtrace\ClientboundMapItemDataPacket;
+use FaigerSYS\MapImageEngine\pocketmine_bc\ClientboundMapItemDataPacket;
 
 use FaigerSYS\MapImageEngine\MapImageEngine;
 
@@ -29,9 +29,6 @@ class ImageStorage {
 	const STATE_NOT_EXISTS = 5;
 	const STATE_FILE_ERROR = 6;
 	
-	/** @var BatchPacket_1|BatchPacket_2 */
-	private $batch_class;
-	
 	/** @var string[] */
 	private $images = [];
 	
@@ -40,14 +37,6 @@ class ImageStorage {
 	
 	/** @var BatchPacket_1[]|BatchPacket_2[] */
 	private $packets = [];
-	
-	public function __construct() {
-		try {
-			$this->batch_class = new BatchPacket_1;
-		} catch (\Throwable $e) {
-			$this->batch_class = new BatchPacket_2;
-		} 
-	}
 	
 	public function addImage(string $image, string $name, bool $is_path = false) : int {
 		$name = strtr(trim($name), ' ', '_');
@@ -79,11 +68,17 @@ class ImageStorage {
 		$x_blocks = count($image['blocks'][0]);
 		$y_blocks = count($image['blocks']);
 		
-		$encoder = new ClientboundMapItemDataPacket;
-		$encoder->type = ClientboundMapItemDataPacket::BITFLAG_TEXTURE_UPDATE;
-		$encoder->scale = 0;
-		$encoder->width = 128;
-		$encoder->height = 128;
+		$packet = new ClientboundMapItemDataPacket;
+		$packet->type = ClientboundMapItemDataPacket::BITFLAG_TEXTURE_UPDATE;
+		$packet->scale = 0;
+		$packet->width = 128;
+		$packet->height = 128;
+		
+		try {
+			$batched_o = new BatchPacket_1;
+		} catch (\Throwable $e) {
+			$batched_o = new BatchPacket_2;
+		} 
 		
 		$image_data = [
 			'x_blocks' => $x_blocks,
@@ -94,11 +89,8 @@ class ImageStorage {
 		
 		$cache_folder = MapImageEngine::getInstance()->getDataFolder() .  'cache/';
 		
-		$m1 = microtime(true);
 		for ($y = 0; $y < $y_blocks; $y++) {
 			for ($x = 0; $x < $x_blocks; $x++) {
-				$m2 = microtime(true);
-				
 				$cache_hash = hash('md5', $image['blocks'][$y][$x]);
 				$cache_path = $cache_folder . $cache_hash;
 				$cache_data = json_decode(@file_get_contents($cache_path), true);
@@ -114,7 +106,7 @@ class ImageStorage {
 					$colors = ClientboundMapItemDataPacket::prepareColors($colors, 128, 128);
 					
 					$cache_data = [
-						'api' => self::CURRENT_CACHE_API,
+						'api'    => self::CURRENT_CACHE_API,
 						'colors' => base64_encode($colors)
 					];
 					$cache_data = json_encode($cache_data);
@@ -123,27 +115,27 @@ class ImageStorage {
 				
 				$map_id = Entity::$entityCount++;
 				
-				$encoder->mapId = $map_id;
-				$encoder->colors = $colors;
-				$encoder->encode();
+				$packet->mapId = $map_id;
+				$packet->colors = $colors;
+				$packet->encode();
 				
-				$batch = clone $this->batch_class;
+				$batched = clone $batched_o;
 				
-				if (method_exists($batch, 'addPacket')) {
-					$batch->addPacket($encoder);
+				if (method_exists($batched, 'addPacket')) {
+					$batched->addPacket($packet);
 				} else {
-					$batch->payload = Binary::writeUnsignedVarInt(strlen($encoder->buffer)) . $encoder->buffer;
+					$batched->payload = Binary::writeUnsignedVarInt(strlen($packet->buffer)) . $packet->buffer;
 				}
-				if (method_exists($batch, 'compress')) {
-					$batch->compress(9);
-				} elseif (method_exists($batch, 'setCompressionLevel')) {
-					$batch->setCompressionLevel(9);
+				if (method_exists($batched, 'compress')) {
+					$batched->compress(9);
+				} elseif (method_exists($batched, 'setCompressionLevel')) {
+					$batched->setCompressionLevel(9);
 				} else {
-					$batch->payload = zlib_encode($batch->payload, ZLIB_ENCODING_DEFLATE, 9);
+					$batched->payload = zlib_encode($batched->payload, ZLIB_ENCODING_DEFLATE, 9);
 				}
 				
 				$image_data['blocks'][$y][$x] = $map_id;
-				$packets[$map_id] = $batch;
+				$packets[$map_id] = $batched;
 			}
 		}
 		
@@ -175,14 +167,19 @@ class ImageStorage {
 		return $this->images_data[$image_hash]['blocks'][$y_block][$x_block] ?? null;
 	}
 	
-	public function sendImage(int $map_id, Player ...$players) {
-		$batch = $this->packets[$map_id] ?? null;
-		if (!$batch) {
+	public function getPacket(int $map_id) {
+		return $this->packets[$map_id] ?? null;
+	}
+	
+	public function sendImage(int $map_id, Player ...$players) : int {
+		$packet = $this->getPacket($map_id);
+		
+		if (!$packet) {
 			return self::STATE_NOT_EXISTS;
 		}
 		
 		foreach ($players as $player) {
-			$player->dataPacket($batch);
+			$player->dataPacket($packet);
 		}
 		
 		return self::STATE_OK;

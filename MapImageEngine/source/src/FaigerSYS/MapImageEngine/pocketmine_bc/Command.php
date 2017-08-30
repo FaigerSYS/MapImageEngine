@@ -11,7 +11,7 @@ $type = (string) $label_param->getType();
 eval('
 declare(strict_types=1);
 
-namespace pocketmine_backtrace;
+namespace FaigerSYS\MapImageEngine\pocketmine_bc;
 
 abstract class Command extends ' . $class . ' {
 	

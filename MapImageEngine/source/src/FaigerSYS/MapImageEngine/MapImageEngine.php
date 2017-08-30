@@ -6,6 +6,7 @@ use pocketmine\plugin\PluginBase;
 use pocketmine\utils\TextFormat as CLR;
 
 use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
 use FaigerSYS\MapImageEngine\item\FilledMap as FilledMapItem;
 
 use pocketmine\tile\ItemFrame;
@@ -16,8 +17,8 @@ use pocketmine\event\level\ChunkLoadEvent;
 
 use pocketmine\network\mcpe\protocol\PacketPool;
 
-use pocketmine_backtrace\MapInfoRequestPacket;
-use pocketmine_backtrace\ClientboundMapItemDataPacket;
+use FaigerSYS\MapImageEngine\pocketmine_bc\MapInfoRequestPacket;
+use FaigerSYS\MapImageEngine\pocketmine_bc\ClientboundMapItemDataPacket;
 
 use FaigerSYS\MapImageEngine\TranslateStrings as TS;
 use FaigerSYS\MapImageEngine\storage\ImageStorage;
@@ -74,15 +75,25 @@ class MapImageEngine extends PluginBase implements Listener {
 	}
 	
 	private function registerItems() {
-		if (method_exists(Item::class, 'registerItem')) {
-			Item::registerItem(new FilledMapItem);
+		try {
+			if (class_exists(ItemFactory::class)) {
+				$class = ItemFactory::class;
+			} else {
+				$class = Item::class;
+			}
+		} catch (\Throwable $e) {
+			$class = Item::class;
+		}
+		
+		if (method_exists($class, 'registerItem')) {
+			$class::registerItem(new FilledMapItem, true);
 		} else {
-			foreach (Item::$list as $item) {
+			foreach ($class::$list as $item) {
 				if ($item !== null) {
 					if (is_array($item)) {
-						Item::$list[Item::FILLED_MAP ?? 358][0] = is_string(reset($item)) ? FilledMapItem::class : new FilledMapItem;
+						$class::$list[Item::FILLED_MAP ?? 358][0] = is_string(reset($item)) ? FilledMapItem::class : new FilledMapItem;
 					} else {
-						Item::$list[Item::FILLED_MAP ?? 358] = is_string($item) ? FilledMapItem::class : new FilledMapItem;
+						$class::$list[Item::FILLED_MAP ?? 358] = is_string($item) ? FilledMapItem::class : new FilledMapItem;
 					}
 					break;
 				}

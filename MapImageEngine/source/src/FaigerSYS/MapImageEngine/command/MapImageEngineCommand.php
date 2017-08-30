@@ -7,7 +7,7 @@ use pocketmine\Player;
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
 
-use pocketmine_backtrace\Command;
+use FaigerSYS\MapImageEngine\pocketmine_bc\Command;
 use pocketmine\command\PluginIdentifiableCommand;
 
 use pocketmine\plugin\Plugin;

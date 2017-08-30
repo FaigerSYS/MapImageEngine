@@ -1,10 +1,10 @@
 name: MapImageEngine
 main: FaigerSYS\MapImageEngine\MapImageEngine
-version: "1.0.7"
-api: ["2.0.0", "3.0.0", "3.0.0-ALPHA1", "3.0.0-ALPHA2", "3.0.0-ALPHA3", "3.0.0-ALPHA4", "3.0.0-ALPHA5", "3.0.0-ALPHA6", "3.0.0-ALPHA7"]
+version: "1.0.8"
+api: ["3.0.0-ALPHA1", "3.0.0-ALPHA2", "3.0.0-ALPHA3", "3.0.0-ALPHA4", "3.0.0-ALPHA5", "3.0.0-ALPHA6", "3.0.0-ALPHA7"]
 load: POSTWORLD
 author: FaigerSYS
-description: "Image engine for MCPE"
+description: "Image engine for MCPE servers"
 
 permissions:
   mapimageengine:

@@ -74,7 +74,7 @@ if (method_exists($dp_class, 'getVarLong')) {
 eval('
 declare(strict_types=1);
 
-namespace pocketmine_backtrace;
+namespace FaigerSYS\MapImageEngine\pocketmine_bc;
 
 class MapInfoRequestPacket extends ' . $dp_class . '{
 	const NETWORK_ID = ' . $pk_id . ';
