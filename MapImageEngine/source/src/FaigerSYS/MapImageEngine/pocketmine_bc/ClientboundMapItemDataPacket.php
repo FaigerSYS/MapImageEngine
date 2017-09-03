@@ -113,7 +113,7 @@ class ClientboundMapItemDataPacket extends ' . $dp_class . '{
 		if(($decorationCount = count($this->decorations)) > 0){
 			$type |= self::BITFLAG_DECORATION_UPDATE;
 		}
-		if(count($this->colors) > 0){
+		if(is_string($this->colors) && !empty($this->colors)){
 			$type |= self::BITFLAG_TEXTURE_UPDATE;
 		}
 
