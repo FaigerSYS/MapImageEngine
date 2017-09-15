@@ -46,26 +46,28 @@ if (method_exists($dp_class, 'handle')) {
 	if ($class_exists('\pocketmine\network\mcpe\NetworkSession')) {
 		$ns_class = '\pocketmine\network\mcpe\NetworkSession';
 	} elseif ($class_exists('\pocketmine\network\NetworkSession')) {
-		$ns_class = '\pocketmine\network\NetworkSession'; // I have not seen this yet, but everything can be in future :P
+		$ns_class = '\pocketmine\network\NetworkSession';
 	}
 }
 
-$pk_id = $info_class::MAP_INFO_REQUEST_PACKET ?? null;
-if ($pk_id === null) {
+$id = $info_class::MAP_INFO_REQUEST_PACKET ?? null;
+if ($id === null) {
 	$protocol = $info_class::CURRENT_PROTOCOL;
 	
 	if ($protocol >= 105) {
-		$pk_id = 0x44;
+		$id = 0x44;
 	} elseif ($protocol >= 92) {
-		$pk_id = 0x43;
+		$id = 0x43;
 	} elseif ($protocol >= 90) {
-		$pk_id = 0x42;
+		$id = 0x42;
 	} else {
-		$pk_id = 0x3c;
+		$id = 0x3c;
 	}
 }
 
-if (method_exists($dp_class, 'getVarLong')) {
+if (method_exists($dp_class, 'getEntityUniqueId')) {
+	$f1 = 'getEntityUniqueId';
+} elseif (method_exists($dp_class, 'getVarLong')) {
 	$f1 = 'getVarLong';
 } else {
 	$f1 = 'getVarInt';
@@ -77,18 +79,19 @@ declare(strict_types=1);
 namespace FaigerSYS\MapImageEngine\pocketmine_bc;
 
 class MapInfoRequestPacket extends ' . $dp_class . '{
-	const NETWORK_ID = ' . $pk_id . ';
-
+	
+	const NETWORK_ID = ' . $id . ';
+	
 	public $mapId;
-
+	
 	public function decode(){
-		$this->mapId = $this->' . $f1 . '(); // putEntityUniqueId
+		$this->mapId = $this->' . $f1 . '();
 	}
-
+	
 	public function encode(){
 		
 	}
-
+	
 	' . ($ns_class ? 'public function handle(' . $ns_class . ' $session) : bool { return true; }' : '') . '
 }
 

@@ -46,26 +46,28 @@ if (method_exists($dp_class, 'handle')) {
 	if ($class_exists('\pocketmine\network\mcpe\NetworkSession')) {
 		$ns_class = '\pocketmine\network\mcpe\NetworkSession';
 	} elseif ($class_exists('\pocketmine\network\NetworkSession')) {
-		$ns_class = '\pocketmine\network\NetworkSession'; // I have not seen this yet, but everything can be :P
+		$ns_class = '\pocketmine\network\NetworkSession';
 	}
 }
 
-$pk_id = $info_class::CLIENTBOUND_MAP_ITEM_DATA_PACKET ?? null;
-if ($pk_id === null) {
+$id = $info_class::CLIENTBOUND_MAP_ITEM_DATA_PACKET ?? null;
+if ($id === null) {
 	$protocol = $info_class::CURRENT_PROTOCOL;
 	
 	if ($protocol >= 105) {
-		$pk_id = 0x43;
+		$id = 0x43;
 	} elseif ($protocol >= 92) {
-		$pk_id = 0x42;
+		$id = 0x42;
 	} elseif ($protocol >= 90) {
-		$pk_id = 0x41;
+		$id = 0x41;
 	} else {
-		$pk_id = 0x3e;
+		$id = 0x3e;
 	}
 }
 
-if (method_exists($dp_class, 'putVarLong')) {
+if (method_exists($dp_class, 'putEntityUniqueId')) {
+	$f1 = 'putEntityUniqueId';
+} elseif (method_exists($dp_class, 'putVarLong')) {
 	$f1 = 'putVarLong';
 } else {
 	$f1 = 'putVarInt';
@@ -79,75 +81,44 @@ namespace FaigerSYS\MapImageEngine\pocketmine_bc;
 use pocketmine\utils\BinaryStream;
 
 class ClientboundMapItemDataPacket extends ' . $dp_class . '{
-	const NETWORK_ID = ' . $pk_id . ';
-
+	
+	const NETWORK_ID = ' . $id . ';
+	
 	const BITFLAG_TEXTURE_UPDATE = 0x02;    // Image
 	const BITFLAG_DECORATION_UPDATE = 0x04; // Arrows...?
-
+	
 	public $mapId;
-	public $type;
-
-	public $eids = [];
+	
 	public $scale;
-	public $decorations = [];
-
+	
 	public $width;
 	public $height;
 	public $xOffset = 0;
 	public $yOffset = 0;
 	
 	public $colors = "";
-
+	
 	public function decode(){
 		// Do not need this one
 	}
-
+	
 	public function encode(){
 		$this->reset();
-		$this->' . $f1 . '($this->mapId); // putEntityUniqueId
-
-		$type = 0;
-		if(($eidsCount = count($this->eids)) > 0){
-			$type |= 0x08;
-		}
-		if(($decorationCount = count($this->decorations)) > 0){
-			$type |= self::BITFLAG_DECORATION_UPDATE;
-		}
-		if(is_string($this->colors) && !empty($this->colors)){
-			$type |= self::BITFLAG_TEXTURE_UPDATE;
-		}
-
+		
+		$this->' . $f1 . '($this->mapId);
+		
+		$type = self::BITFLAG_TEXTURE_UPDATE;
 		$this->putUnsignedVarInt($type);
-
-		if(($type & 0x08) !== 0){ //TODO: find out what these are for
-			$this->putUnsignedVarInt($eidsCount);
-			foreach($this->eids as $eid){
-				$this->' . $f1 . '($eid); // putEntityUniqueId
-			}
-		}
-
-		if(($type & (self::BITFLAG_TEXTURE_UPDATE | self::BITFLAG_DECORATION_UPDATE)) !== 0){
-			$this->putByte($this->scale);
-		}
-
-		if(($type & self::BITFLAG_DECORATION_UPDATE) !== 0){
-			$this->putUnsignedVarInt($decorationCount);
-			foreach($this->decorations as $decoration){
-				$this->putVarInt(($decoration["rot"] & 0x0f) | ($decoration["img"] << 4));
-				$this->putByte($decoration["xOffset"]);
-				$this->putByte($decoration["yOffset"]);
-				$this->putString($decoration["label"]);
-				$this->putLInt($decoration["color"]);
-			}
-		}
-
-		if(($type & self::BITFLAG_TEXTURE_UPDATE) !== 0){
-			$this->putVarInt($this->width);
-			$this->putVarInt($this->height);
-			$this->putVarInt($this->xOffset);
-			$this->putVarInt($this->yOffset);
-			$this->put($this->colors);
-		}
+		
+		$this->putByte($this->scale);
+		
+		$this->putVarInt($this->width);
+		$this->putVarInt($this->height);
+		$this->putVarInt($this->xOffset);
+		$this->putVarInt($this->yOffset);
+		$this->put($this->colors);
+		
+		$this->isEncoded = true;
 	}
 	
 	public static function prepareColors(array $colors, int $width, int $height) {

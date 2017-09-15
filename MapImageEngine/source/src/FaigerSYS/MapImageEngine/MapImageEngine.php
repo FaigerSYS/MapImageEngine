@@ -26,6 +26,10 @@ use FaigerSYS\MapImageEngine\command\MapImageEngineCommand;
 
 class MapImageEngine extends PluginBase implements Listener {
 	
+	const UNSUPPORTED_SOFTWARE = [
+		'PocketMine-Steadfast' => 'Steadfast',
+	];
+	
 	/** @var MapImageEngine */
 	private static $instance;
 	
@@ -33,17 +37,21 @@ class MapImageEngine extends PluginBase implements Listener {
 	private $storage;
 	
 	public function onEnable() {
+		if ($name = self::UNSUPPORTED_SOFTWARE[$this->getServer()->getName()] ?? null) {
+			$this->getLogger()->error($name . ' is not supported! Try using other server software');
+		}
+		
 		$old_plugin = self::$instance;
 		self::$instance = $this;
-		$is_reload = ($old_plugin instanceof MapImageEngine);
+		$is_reload = $old_plugin instanceof MapImageEngine;
 		
 		TS::init();
 		
-		$this->getLogger()->info(CLR::GOLD . TS::translate($is_reload ? 'plugin-loader.reloading' : 'plugin-loader.loading'));
-		$this->getLogger()->info(CLR::GOLD . TS::translate('plugin-loader.info-instruction'));
-		$this->getLogger()->info(CLR::GOLD . TS::translate('plugin-loader.info-long-loading'));
+		$this->getLogger()->info(CLR::GREEN . TS::translate($is_reload ? 'plugin-loader.reloading' : 'plugin-loader.loading'));
+		$this->getLogger()->info(CLR::AQUA . TS::translate('plugin-loader.info-instruction'));
+		$this->getLogger()->info(CLR::AQUA . TS::translate('plugin-loader.info-long-loading'));
 		
-		if ($old_plugin) {
+		if ($is_reload) {
 			$this->storage = $old_plugin->storage;
 		}
 		
@@ -57,7 +65,7 @@ class MapImageEngine extends PluginBase implements Listener {
 		
 		@mkdir($dir = $path . 'instructions/');
 		foreach (scandir($r_dir = $this->getFile() . '/resources/instructions/') as $file) {
-			if ($file[0] !== '.') {
+			if ($file{0} !== '.') {
 				copy($r_dir . $file, $dir . $file);
 			}
 		} 
@@ -67,7 +75,7 @@ class MapImageEngine extends PluginBase implements Listener {
 		
 		$this->loadImages($is_reload);
 		
-		$this->getLogger()->info(CLR::GOLD . TS::translate($is_reload ? 'plugin-loader.reloaded' : 'plugin-loader.loaded'));
+		$this->getLogger()->info(CLR::GREEN . TS::translate($is_reload ? 'plugin-loader.reloaded' : 'plugin-loader.loaded'));
 	}
 	
 	private function registerCommands() {
@@ -79,7 +87,7 @@ class MapImageEngine extends PluginBase implements Listener {
 			if (class_exists(ItemFactory::class)) {
 				$class = ItemFactory::class;
 			} else {
-				$class = Item::class;
+				throw \Exception;
 			}
 		} catch (\Throwable $e) {
 			$class = Item::class;

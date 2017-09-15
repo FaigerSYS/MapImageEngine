@@ -38,6 +38,9 @@ class ImageStorage {
 	/** @var BatchPacket_1[]|BatchPacket_2[] */
 	private $packets = [];
 	
+	/** @var string[] */
+	private $old_hashes = [];
+	
 	public function addImage(string $image, string $name, bool $is_path = false) : int {
 		$name = strtr(trim($name), ' ', '_');
 		if (empty($name) || isset($this->images[$name])) {
@@ -51,7 +54,8 @@ class ImageStorage {
 			}
 		}
 		
-		$hash = hash('md5', $image);
+		$old_hash = hash('md5', $image);
+		$hash = hash('sha1', $image);
 		if (isset($this->images_data[$hash])) {
 			return self::STATE_IMAGE_EXISTS;
 		}
@@ -87,7 +91,7 @@ class ImageStorage {
 		];
 		$packets = [];
 		
-		$cache_folder = MapImageEngine::getInstance()->getDataFolder() .  'cache/';
+		$cache_folder = MapImageEngine::getInstance()->getDataFolder() . 'cache/';
 		
 		for ($y = 0; $y < $y_blocks; $y++) {
 			for ($x = 0; $x < $x_blocks; $x++) {
@@ -112,6 +116,8 @@ class ImageStorage {
 					$cache_data = json_encode($cache_data);
 					file_put_contents($cache_path, $cache_data);
 				}
+				
+				Entity::$entityCount += mt_rand(1, 20);
 				
 				$map_id = Entity::$entityCount++;
 				
@@ -139,6 +145,8 @@ class ImageStorage {
 			}
 		}
 		
+		$this->old_hashes[$old_hash] = $hash;
+		
 		$this->images[$name] = $hash;
 		$this->images_data[$hash] = $image_data;
 		$this->packets += $packets;
@@ -155,6 +163,10 @@ class ImageStorage {
 		return $this->images[$name] ?? null;
 	}
 	
+	public function getNewHash(string $old_hash) {
+		return $this->old_hashes[$old_hash] ?? null;
+	}
+	
 	public function getBlocksCountByX(string $image_hash) {
 		return $this->images_data[$image_hash]['x_blocks'] ?? null;
 	}
@@ -165,10 +177,6 @@ class ImageStorage {
 	
 	public function getMapId(string $image_hash, int $x_block, int $y_block) {
 		return $this->images_data[$image_hash]['blocks'][$y_block][$x_block] ?? null;
-	}
-	
-	public function getPacket(int $map_id) {
-		return $this->packets[$map_id] ?? null;
 	}
 	
 	public function sendImage(int $map_id, Player ...$players) : int {
