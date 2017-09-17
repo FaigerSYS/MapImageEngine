@@ -179,9 +179,12 @@ class ImageStorage {
 		return $this->images_data[$image_hash]['blocks'][$y_block][$x_block] ?? null;
 	}
 	
+	public function getPacket(int $map_id) {
+		return $this->packets[$map_id] ?? null;
+	}
+	
 	public function sendImage(int $map_id, Player ...$players) : int {
 		$packet = $this->getPacket($map_id);
-		
 		if (!$packet) {
 			return self::STATE_NOT_EXISTS;
 		}
