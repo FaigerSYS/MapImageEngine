@@ -19,6 +19,8 @@
  *
 */
 
+// TO-DO: use original packet if exists
+
 $class_exists = function (string $class) : bool {
 	try {
 		$exists = class_exists($class);
@@ -50,10 +52,9 @@ if (method_exists($dp_class, 'handle')) {
 	}
 }
 
+$protocol = $info_class::CURRENT_PROTOCOL;
 $id = $info_class::MAP_INFO_REQUEST_PACKET ?? null;
 if ($id === null) {
-	$protocol = $info_class::CURRENT_PROTOCOL;
-	
 	if ($protocol >= 105) {
 		$id = 0x44;
 	} elseif ($protocol >= 92) {
@@ -84,7 +85,8 @@ class MapInfoRequestPacket extends ' . $dp_class . '{
 	
 	public $mapId;
 	
-	public function decode(){
+	public function ' . (method_exists($dp_class, 'decodePayload') ? 'decodePayload' : 'decode') . '(){
+		
 		$this->mapId = $this->' . $f1 . '();
 	}
 	

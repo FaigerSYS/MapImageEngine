@@ -31,7 +31,7 @@ class FilledMap extends Item {
 		return $this;
 	}
 	
-	private function updateMapData() {
+	protected function updateMapData() {
 		$plugin = MapImageEngine::getInstance();
 		if (!$plugin) {
 			return;

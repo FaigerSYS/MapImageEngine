@@ -28,8 +28,6 @@ $class_exists = function (string $class) : bool {
 	}
 };
 
-$ns_class = null;
-
 if ($class_exists('\pocketmine\network\mcpe\protocol\DataPacket')) {
 	$dp_class = '\pocketmine\network\mcpe\protocol\DataPacket';
 } else {
@@ -42,6 +40,7 @@ if ($class_exists('\pocketmine\network\mcpe\protocol\ProtocolInfo')) {
 	$info_class = '\pocketmine\network\protocol\Info';
 }
 
+$ns_class = null;
 if (method_exists($dp_class, 'handle')) {
 	if ($class_exists('\pocketmine\network\mcpe\NetworkSession')) {
 		$ns_class = '\pocketmine\network\mcpe\NetworkSession';
@@ -50,10 +49,9 @@ if (method_exists($dp_class, 'handle')) {
 	}
 }
 
+$protocol = $info_class::CURRENT_PROTOCOL;
 $id = $info_class::CLIENTBOUND_MAP_ITEM_DATA_PACKET ?? null;
 if ($id === null) {
-	$protocol = $info_class::CURRENT_PROTOCOL;
-	
 	if ($protocol >= 105) {
 		$id = 0x43;
 	} elseif ($protocol >= 92) {
@@ -84,8 +82,8 @@ class ClientboundMapItemDataPacket extends ' . $dp_class . '{
 	
 	const NETWORK_ID = ' . $id . ';
 	
-	const BITFLAG_TEXTURE_UPDATE = 0x02;    // Image
-	const BITFLAG_DECORATION_UPDATE = 0x04; // Arrows...?
+	const BITFLAG_TEXTURE_UPDATE = 0x02;
+	const BITFLAG_DECORATION_UPDATE = 0x04;
 	
 	public $mapId;
 	
@@ -102,13 +100,14 @@ class ClientboundMapItemDataPacket extends ' . $dp_class . '{
 		// Do not need this one
 	}
 	
-	public function encode(){
-		$this->reset();
+	public function ' . (method_exists($dp_class, 'encodePayload') ? 'encodePayload(){' : 'encode(){ $this->reset();') . '
 		
 		$this->' . $f1 . '($this->mapId);
 		
 		$type = self::BITFLAG_TEXTURE_UPDATE;
 		$this->putUnsignedVarInt($type);
+		
+		' . ($protocol >= 135 ? '$this->putByte(0);' : '') . '
 		
 		$this->putByte($this->scale);
 		
@@ -116,6 +115,8 @@ class ClientboundMapItemDataPacket extends ' . $dp_class . '{
 		$this->putVarInt($this->height);
 		$this->putVarInt($this->xOffset);
 		$this->putVarInt($this->yOffset);
+		
+		' . ($protocol >= 135 ? '$this->putUnsignedVarInt($this->width * $this->height);' : '') . '
 		$this->put($this->colors);
 		
 		$this->isEncoded = true;
