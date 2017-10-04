@@ -21,7 +21,11 @@ use FaigerSYS\MapImageEngine\pocketmine_bc\MapInfoRequestPacket;
 use FaigerSYS\MapImageEngine\pocketmine_bc\ClientboundMapItemDataPacket;
 
 use FaigerSYS\MapImageEngine\TranslateStrings as TS;
+
 use FaigerSYS\MapImageEngine\storage\ImageStorage;
+use FaigerSYS\MapImageEngine\storage\MapImage;
+use FaigerSYS\MapImageEngine\storage\OldFormatConverter;
+
 use FaigerSYS\MapImageEngine\command\MapImageEngineCommand;
 
 class MapImageEngine extends PluginBase implements Listener {
@@ -38,7 +42,7 @@ class MapImageEngine extends PluginBase implements Listener {
 	
 	public function onEnable() {
 		if ($name = self::UNSUPPORTED_SOFTWARE[$this->getServer()->getName()] ?? null) {
-			$this->getLogger()->error($name . ' is not supported! Try using other server software');
+			$this->getLogger()->error($name . ' is not supported! Try to use another server software');
 		}
 		
 		$old_plugin = self::$instance;
@@ -47,9 +51,10 @@ class MapImageEngine extends PluginBase implements Listener {
 		
 		TS::init();
 		
-		$this->getLogger()->info(CLR::GREEN . TS::translate($is_reload ? 'plugin-loader.reloading' : 'plugin-loader.loading'));
+		$this->getLogger()->info(CLR::GOLD . TS::translate($is_reload ? 'plugin-loader.reloading' : 'plugin-loader.loading'));
 		$this->getLogger()->info(CLR::AQUA . TS::translate('plugin-loader.info-instruction'));
 		$this->getLogger()->info(CLR::AQUA . TS::translate('plugin-loader.info-long-loading'));
+		$this->getLogger()->info(CLR::AQUA . TS::translate('plugin-loader.info-1.1-update'));
 		
 		if ($is_reload) {
 			$this->storage = $old_plugin->storage;
@@ -71,11 +76,12 @@ class MapImageEngine extends PluginBase implements Listener {
 		} 
 		
 		@mkdir($path . 'images');
+		@mkdir($path . 'images/old_files');
 		@mkdir($path . 'cache');
 		
 		$this->loadImages($is_reload);
 		
-		$this->getLogger()->info(CLR::GREEN . TS::translate($is_reload ? 'plugin-loader.reloaded' : 'plugin-loader.loaded'));
+		$this->getLogger()->info(CLR::GOLD . TS::translate($is_reload ? 'plugin-loader.reloaded' : 'plugin-loader.loaded'));
 	}
 	
 	private function registerCommands() {
@@ -129,29 +135,77 @@ class MapImageEngine extends PluginBase implements Listener {
 		
 		$files = array_filter(
 			scandir($path),
-			function ($file) {
-				return substr($file, -4, 4) === '.mie';
+			function ($file) use ($path) {
+				return is_file($path . $file) && substr($file, -5, 5) === '.miei';
 			}
 		);
 		
+		$old_files_path = $path . 'old_files/';
+		$old_files = array_filter(
+			scandir($path),
+			function ($file) use ($path) {
+				return is_file($path . $file) && substr($file, -4, 4) === '.mie';
+			}
+		);
+		foreach ($old_files as $old_file) {
+			$new_data = OldFormatConverter::tryConvert(file_get_contents($path . $old_file));
+			if ($new_data !== null) {
+				$this->getLogger()->notice(TS::translate('image-loader.prefix', $old_file) . TS::translate('image-loader.converted'));
+				
+				$basename = pathinfo($old_file, PATHINFO_BASENAME);
+				$new_path = $old_files_path . $basename;
+				$i = 0;
+				while (file_exists($new_path)) {
+					$new_path = $old_files_path . $basename . '.' . ++$i;
+				}
+				rename($path . $old_file, $new_path);
+				
+				$filename = pathinfo($old_file, PATHINFO_FILENAME);
+				$extension = '.miei';
+				$new_file = $filename . $extension;
+				$i = 0;
+				while (file_exists($path . $new_file)) {
+					$new_file = $filename . '_' . ++$i . $extension;
+				}
+				file_put_contents($path . $new_file, $new_data);
+				
+				unset($new_data);
+				
+				$files[] = $new_file;
+			} else {
+				$this->getLogger()->warning(TS::translate('image-loader.prefix', $old_file) . TS::translate('image-loader.not-converted'));
+			}
+		}
+		
 		foreach ($files as $file) {
-			$state = $storage->addImage($path . $file, substr($file, 0, -4), true);
-			switch ($state) {
-				case ImageStorage::STATE_NAME_EXISTS:
-					!$is_reload && $this->getLogger()->warning(TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.err-name-exists'));
-					break;
-				
-				case ImageStorage::STATE_IMAGE_EXISTS:
-					!$is_reload && $this->getLogger()->warning(TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.err-image-exists'));
-					break;
-				
-				case ImageStorage::STATE_CORRUPTED:
-					$this->getLogger()->warning(TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.err-corrupted'));
-					break;
-				
-				case ImageStorage::STATE_UNSUPPORTED_API:
-					$this->getLogger()->warning(TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.err-unsupported-api'));
-					break;
+			$name = substr($file, 0, -5);
+			$image = MapImage::fromBinary(file_get_contents($path . $file), $state);
+			if ($image !== null) {
+				$state = $storage->registerImage($image, true, $name);
+				switch ($state) {
+					case ImageStorage::R_OK:
+						$this->getLogger()->info(CLR::GREEN . TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.succesfull'));
+						break;
+						
+					case ImageStorage::R_UUID_EXISTS:
+						!$is_reload && $this->getLogger()->info(TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.err-image-exists'));
+						break;
+					
+					case ImageStorage::R_NAME_EXISTS:
+					case ImageStorage::R_INVALID_NAME:
+						$this->getLogger()->warning(TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.err-name-exists'));
+						break;
+				}
+			} else {
+				switch ($state) {
+					case MapImage::R_CORRUPTED:
+						$this->getLogger()->warning(TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.err-corrupted'));
+						break;
+						
+					case MapImage::R_UNSUPPORTED_API:
+						$this->getLogger()->warning(TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.err-unsupported-api'));
+						break;
+				}
 			}
 		}
 		
@@ -164,6 +218,7 @@ class MapImageEngine extends PluginBase implements Listener {
 	
 	/**
 	 * @priority LOW
+	 * @ignoreCancelled true
 	 */
 	public function onRequest(DataPacketReceiveEvent $e) {
 		if ($e->getPacket() instanceof MapInfoRequestPacket) {

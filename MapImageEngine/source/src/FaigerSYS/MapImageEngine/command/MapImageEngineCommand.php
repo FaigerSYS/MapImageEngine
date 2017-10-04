@@ -51,18 +51,16 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 		$cmd = array_shift($args);
 		switch ($cmd) {
 			case 'list':
-				$storage = $this->getPlugin()->getImageStorage();
-				
-				$list = $storage->getImages();
+				$list = $this->getPlugin()->getImageStorage()->getNamedImages();
 				if (empty($list)) {
 					$sender->sendMessage(self::MSG_PREFIX . TS::translate('command.list.no-images'));
 				} else {
 					$new_list = [];
-					foreach ($list as $name => $hash) {
-						$x = $storage->getBlocksCountByX($hash);
-						$y = $storage->getBlocksCountByY($hash);
+					foreach ($list as $name => $image) {
+						$w = $image->getBlocksWidth();
+						$h = $image->getBlocksHeight();
 						
-						$new_list[] = $name . CLR::RESET . ' ' . CLR::AQUA  . '(' . CLR::DARK_GREEN . $x . CLR::AQUA . 'x'.  CLR::DARK_GREEN . $y . CLR::AQUA . ')';
+						$new_list[] = $name . CLR::RESET . ' ' . CLR::AQUA  . '(' . CLR::DARK_GREEN . $w . CLR::AQUA . 'x'.  CLR::DARK_GREEN . $h . CLR::AQUA . ')';
 					}
 					
 					$list = CLR::WHITE . CLR::ITALIC . implode($new_list, CLR::GRAY . ', ' . CLR::WHITE . CLR::ITALIC) . CLR::GRAY;
@@ -78,17 +76,17 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 					$sender->sendMessage(CLR::GRAY . '  pretty - ' . TS::translate('command.place.usage.flags.pretty'));
 					$sender->sendMessage(CLR::GRAY . '  auto - ' . TS::translate('command.place.usage.flags.auto'));
 				} else {
-					$image_hash = $this->getPlugin()->getImageStorage()->getImageHashByName($image_name);
-					if (!$image_hash) {
+					$image = $this->getPlugin()->getImageStorage()->getImageByName($image_name);
+					if (!$image) {
 						$sender->sendMessage(self::MSG_PREFIX . TS::translate('command.place.not-found', $image_name));
 					} else {
 						$this->cache[$sender->getName()] = [
-							'image_hash' => $image_hash,
+							'image_hash' => $image->getHashedUUID(),
 							'pretty'     => in_array('pretty', $args),
 							'auto'       => in_array('auto', $args),
 							'placed'     => 0,
-							'x_count'    => $this->getPlugin()->getImageStorage()->getBlocksCountByX($image_hash),
-							'y_count'    => $this->getPlugin()->getImageStorage()->getBlocksCountByY($image_hash)
+							'x_count'    => $image->getBlocksWidth(),
+							'y_count'    => $image->getBlocksHeight()
 						];
 						
 						$this->processPlaceMessage($sender);

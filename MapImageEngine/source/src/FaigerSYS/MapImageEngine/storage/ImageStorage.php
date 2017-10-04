@@ -3,197 +3,240 @@ namespace FaigerSYS\MapImageEngine\storage;
 
 use pocketmine\Player;
 
-use pocketmine\entity\Entity;
-
-use pocketmine\utils\Binary;
-use pocketmine\network\mcpe\protocol\BatchPacket as BatchPacket_1;
-use pocketmine\network\protocol\BatchPacket as BatchPacket_2;
-
-use FaigerSYS\MapImageEngine\pocketmine_bc\ClientboundMapItemDataPacket;
-
-use FaigerSYS\MapImageEngine\MapImageEngine;
-
 class ImageStorage {
 	
-	const CURRENT_API = 1;
-	const SUPPORTED_API = [1];
+	const R_OK = 0;
+	const R_ALREADY_REGISTERED = 1;
+	const R_UUID_EXISTS = 2;
+	const R_INVALID_NAME = 3;
+	const R_NAME_EXISTS = 4;
 	
-	const CURRENT_CACHE_API = 2;
-	const SUPPORTED_CACHE_API = [2];
-	
-	const STATE_OK = 0;
-	const STATE_CORRUPTED = 1;
-	const STATE_UNSUPPORTED_API = 2;
-	const STATE_IMAGE_EXISTS = 3;
-	const STATE_NAME_EXISTS = 4;
-	const STATE_NOT_EXISTS = 5;
-	const STATE_FILE_ERROR = 6;
-	
-	/** @var string[] */
+	/** @var MapImage[] */
 	private $images = [];
 	
-	/** @var array */
-	private $images_data = [];
-	
-	/** @var BatchPacket_1[]|BatchPacket_2[] */
-	private $packets = [];
+	/** @var string[] */
+	private $hashes = [];
 	
 	/** @var string[] */
-	private $old_hashes = [];
+	private $names = [];
 	
-	public function addImage(string $image, string $name, bool $is_path = false) : int {
-		$name = strtr(trim($name), ' ', '_');
-		if (empty($name) || isset($this->images[$name])) {
-			return self::STATE_NAME_EXISTS;
+	/** @var \pocketmine\network\mcpe\protocol\BatchPacket[]|\pocketmine\network\protocol\BatchPacket[] */
+	private $packet_cache = [];
+	
+	/**
+	 * Registers/adds image to storage
+	 *
+	 * @param MapImage $image
+	 * @param bool     $cache_packets
+	 * @param string   $name
+	 *
+	 * @return int
+	 */
+	public function registerImage(MapImage $image, bool $cache_packets = true, string $name = null) : int {
+		$spl_hash = spl_object_hash($image);
+		if (isset($this->images[$spl_hash])) {
+			return self::R_ALREADY_REGISTERED;
 		}
 		
-		if ($is_path) {
-			$image = @file_get_contents($image);
-			if ($image === false) {
-				return self::STATE_FILE_ERROR;
+		$hash = $image->getHashedUUID();
+		if (isset($this->hashes[$hash])) {
+			return self::R_UUID_EXISTS;
+		}
+		
+		if ($name !== null) {
+			$name = strtr($name, ' ', '_');
+			if (!strlen($name)) {
+				return self::R_INVALID_NAME;
 			}
-		}
-		
-		$old_hash = hash('md5', $image);
-		$hash = hash('sha1', $image);
-		if (isset($this->images_data[$hash])) {
-			return self::STATE_IMAGE_EXISTS;
-		}
-		
-		$image = json_decode(gzinflate($image), true);
-		if (!$image) {
-			return self::STATE_CORRUPTED;
-		}
-		
-		if (!in_array($image['api'] ?? -1, self::SUPPORTED_API)) {
-			return self::STATE_UNSUPPORTED_API;
-		}
-		
-		$x_blocks = count($image['blocks'][0]);
-		$y_blocks = count($image['blocks']);
-		
-		$packet = new ClientboundMapItemDataPacket;
-		$packet->type = ClientboundMapItemDataPacket::BITFLAG_TEXTURE_UPDATE;
-		$packet->scale = 0;
-		$packet->width = 128;
-		$packet->height = 128;
-		
-		try {
-			$batched_o = new BatchPacket_1;
-		} catch (\Throwable $e) {
-			$batched_o = new BatchPacket_2;
-		} 
-		
-		$image_data = [
-			'x_blocks' => $x_blocks,
-			'y_blocks' => $y_blocks,
-			'blocks' => []
-		];
-		$packets = [];
-		
-		$cache_folder = MapImageEngine::getInstance()->getDataFolder() . 'cache/';
-		
-		for ($y = 0; $y < $y_blocks; $y++) {
-			for ($x = 0; $x < $x_blocks; $x++) {
-				$cache_hash = hash('md5', $image['blocks'][$y][$x]);
-				$cache_path = $cache_folder . $cache_hash;
-				$cache_data = json_decode(@file_get_contents($cache_path), true);
-				
-				if (in_array($cache_data['api'] ?? -1, self::SUPPORTED_CACHE_API)) {
-					$colors = base64_decode($cache_data['colors']);
-				} else {
-					$colors = json_decode(gzinflate(base64_decode($image['blocks'][$y][$x])), true);
-					if (!$colors) {
-						return self::STATE_CORRUPTED;
-					}
-					
-					$colors = ClientboundMapItemDataPacket::prepareColors($colors, 128, 128);
-					
-					$cache_data = [
-						'api'    => self::CURRENT_CACHE_API,
-						'colors' => base64_encode($colors)
-					];
-					$cache_data = json_encode($cache_data);
-					file_put_contents($cache_path, $cache_data);
-				}
-				
-				Entity::$entityCount += mt_rand(1, 20);
-				
-				$map_id = Entity::$entityCount++;
-				
-				$packet->mapId = $map_id;
-				$packet->colors = $colors;
-				$packet->encode();
-				
-				$batched = clone $batched_o;
-				
-				if (method_exists($batched, 'addPacket')) {
-					$batched->addPacket($packet);
-				} else {
-					$batched->payload = Binary::writeUnsignedVarInt(strlen($packet->buffer)) . $packet->buffer;
-				}
-				if (method_exists($batched, 'compress')) {
-					$batched->compress(9);
-				} elseif (method_exists($batched, 'setCompressionLevel')) {
-					$batched->setCompressionLevel(9);
-				} else {
-					$batched->payload = zlib_encode($batched->payload, ZLIB_ENCODING_DEFLATE, 9);
-				}
-				
-				$image_data['blocks'][$y][$x] = $map_id;
-				$packets[$map_id] = $batched;
+			if (isset($this->names[$name])) {
+				return self::R_NAME_EXISTS;
 			}
+			$this->names[$name] = $hash;
 		}
 		
-		$this->old_hashes[$old_hash] = $hash;
+		$this->images[$spl_hash] = $image;
+		$this->hashes[$hash] = $spl_hash;
 		
-		$this->images[$name] = $hash;
-		$this->images_data[$hash] = $image_data;
-		$this->packets += $packets;
+		if ($cache_packets) {
+			$this->regeneratePacketsCache($image);
+		}
 		
-		return self::STATE_OK;
+		return self::R_OK;
 	}
 	
-	public function getImages() {
+	/**
+	 * Unregisters/removes image from storage
+	 *
+	 * @param MapImage $image
+	 */
+	public function unregisterImage(MapImage $image) {
+		$spl_hash = spl_object_hash($image);
+		if (!isset($this->images[$spl_hash])) {
+			return;
+		}
+		$hash = $image->getHashedUUID();
+		
+		$this->removePacketsCache($image);
+		
+		foreach ($this->names as $name => $o_spl_hash) {
+			if ($spl_hash === $o_spl_hash) {
+				unset($this->names[$name]);
+			}
+		}
+		foreach ($this->names as $name => $o_spl_hash) {
+			if ($spl_hash === $o_spl_hash) {
+				unset($this->names[$name]);
+			}
+		}
+		unset($this->hashes[$hash]);
+		unset($this->images[$spl_hash]);
+	}
+	
+	/**
+	 * Regenerates map image packets cache
+	 *
+	 * @param MapImage $image
+	 * @param int      $chunk_x
+	 * @param int      $chunk_y
+	 */
+	public function regeneratePacketsCache(MapImage $image = null, int $chunk_x = null, int $chunk_y = null) {
+		if ($image === null) {
+			$this->cache = [];
+			foreach ($this->images as $image) {
+				foreach ($image->getChunks() as $chunks) {
+					foreach ($chunks as $chunk) {
+						$this->packet_cache[$chunk->getMapId()] = $chunk->generateBatchedMapImagePacket(7);
+					}
+				}
+			}
+		} else {
+			if (!isset($this->images[spl_object_hash($image)])) {
+				return;
+			}
+			
+			if ($chunk_x === null && $chunk_y === null) {
+				foreach ($image->getChunks() as $chunks) {
+					foreach ($chunks as $chunk) {
+						$this->packet_cache[$chunk->getMapId()] = $chunk->generateBatchedMapImagePacket(7);
+					}
+				}
+			} else {
+				$chunk = $image->getChunk($chunk_x, $chunk_y);
+				if ($chunk !== null) {
+					$this->packet_cache[$chunk->getMapId()] = $chunk->generateBatchedMapImagePacket(7);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Removes map image packets from cache
+	 *
+	 * @param MapImage $image
+	 * @param int      $chunk_x
+	 * @param int      $chunk_y
+	 */
+	public function removePacketsCache(MapImage $image, int $chunk_x = null, int $chunk_y = null) {
+		if (!isset($this->images[spl_object_hash($image)])) {
+			return;
+		}
+		
+		if ($chunk_x === null && $chunk_y === null) {
+			foreach ($image->getChunks() as $chunks) {
+				foreach ($chunks as $chunk) {
+					unset($this->packet_cache[$chunk->getMapId()]);
+				}
+			}
+		} else {
+			$chunk = $image->getChunk($chunk_x, $chunk_y);
+			if ($chunk !== null) {
+				unset($this->packet_cache[$chunk->getMapId()]);
+			}
+		}
+	}
+	
+	/**
+	 * Removes map image packet with specified map ID
+	 *
+	 * @param int $map_id
+	 */
+	public function removePacketCache(int $map_id) {
+		unset($this->packet_cache[$map_id]);
+	}
+	
+	/**
+	 * Returns map image with specified UUID hash
+	 *
+	 * @param string $uuid_hash
+	 *
+	 * @return MapImage|null
+	 */
+	public function getImage(string $uuid_hash) {
+		return $this->images[$this->hashes[$uuid_hash] ?? null] ?? null;
+	}
+	
+	/**
+	 * Returns map image with specified name
+	 *
+	 * @param string $name
+	 *
+	 * @return MapImage|null
+	 */
+	public function getImageByName(string $name) {
+		return $this->getImage($this->names[strtr($name, ' ', '_')] ?? '');
+	}
+	
+	/**
+	 * Returns all of map images
+	 *
+	 * @return MapImage[]
+	 */
+	public function getImages() : array {
 		return $this->images;
 	}
 	
-	public function getImageHashByName(string $name) {
-		$name = strtr(trim($name), ' ', '_');
-		return $this->images[$name] ?? null;
+	/**
+	 * Returns all of map images that have name
+	 *
+	 * @return MapImage[]
+	 */
+	public function getNamedImages() : array {
+		return array_map(
+			function ($hash) {
+				return $this->getImage($hash);
+			},
+			$this->names
+		);
 	}
 	
-	public function getNewHash(string $old_hash) {
-		return $this->old_hashes[$old_hash] ?? null;
-	}
-	
-	public function getBlocksCountByX(string $image_hash) {
-		return $this->images_data[$image_hash]['x_blocks'] ?? null;
-	}
-	
-	public function getBlocksCountByY(string $image_hash) {
-		return $this->images_data[$image_hash]['y_blocks'] ?? null;
-	}
-	
-	public function getMapId(string $image_hash, int $x_block, int $y_block) {
-		return $this->images_data[$image_hash]['blocks'][$y_block][$x_block] ?? null;
-	}
-	
+	/**
+	 * Returns cached batched map image packet
+	 *
+	 * @param int $map_id
+	 * 
+	 * @return \pocketmine\network\mcpe\protocol\BatchPacket|\pocketmine\network\protocol\BatchPacket
+	 */
 	public function getPacket(int $map_id) {
-		return $this->packets[$map_id] ?? null;
+		if (isset($this->packet_cache[$map_id])) {
+			return clone $this->packet_cache[$map_id];
+		}
 	}
 	
-	public function sendImage(int $map_id, Player ...$players) : int {
+	/**
+	 * Sends cached batched map image packet to players
+	 *
+	 * @param int      $map_id
+	 * @param Player[] ...$players
+	 */
+	public function sendImage(int $map_id, Player ...$players) {
 		$packet = $this->getPacket($map_id);
 		if (!$packet) {
-			return self::STATE_NOT_EXISTS;
+			return;
 		}
 		
 		foreach ($players as $player) {
 			$player->dataPacket($packet);
 		}
-		
-		return self::STATE_OK;
 	}
 	
 }

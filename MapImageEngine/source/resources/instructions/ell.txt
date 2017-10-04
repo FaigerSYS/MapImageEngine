@@ -1,4 +1,4 @@
-Translated by nikoskon
+; Translated by nikoskon
 
 Αυτό το plugin δημιουργήθηκε απο τον FaigerSYS
 Ιστοσελίδα Github: https://github.com/FaigerSYS/MapImageEngine
