@@ -11,6 +11,7 @@ use FaigerSYS\MapImageEngine\pocketmine_bc\ClientboundMapItemDataPacket;
 
 use FaigerSYS\Toolkit\PacketCompressor;
 
+// TO-DO: add more API methods, return ClientboundMapItemDataPacket to the original form
 class MapImageChunk {
 	
 	/**
@@ -218,14 +219,12 @@ class MapImageChunk {
 				$cache_api = $cache_buffer->getInt();
 				if ($cache_api === self::CACHE_API) {
 					$colors = $cache_buffer->get(true);
-					if (strlen($colors) === $this->width * $this->height * 4) {
-						$generate_cache = false;
-					}
+					$generate_cache = false;
 				}
 			}
 		}
 		
-		if (!$colors) {
+		if ($colors === null) {
 			$colors = ClientboundMapItemDataPacket::prepareColors($this->toArrayABGR(), $this->width, $this->height);
 		}
 		

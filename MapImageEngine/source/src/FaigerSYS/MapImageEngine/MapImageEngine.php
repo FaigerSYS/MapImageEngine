@@ -178,9 +178,9 @@ class MapImageEngine extends PluginBase implements Listener {
 		}
 		
 		foreach ($files as $file) {
-			$name = substr($file, 0, -5);
 			$image = MapImage::fromBinary(file_get_contents($path . $file), $state);
 			if ($image !== null) {
+				$name = substr($file, 0, -5);
 				$state = $storage->registerImage($image, true, $name);
 				switch ($state) {
 					case ImageStorage::R_OK:
