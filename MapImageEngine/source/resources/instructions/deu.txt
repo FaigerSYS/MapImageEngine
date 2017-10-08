@@ -1,0 +1,24 @@
+Dieses Plgun wurde von FaigerSYS erstellt
+GitHub Seite: https://github.com/FaigerSYS/MapImageEngine
+
+Wenn du einen Bug gefunden hast, bitte lass es mich wissen! Erstelle eine neue Issue in GitHub
+
+Wie du ein Bild machen kannst:
+  1. Konvertiere irgendein Bild ('png', 'jpg' etc.)...
+	  - Nutze MIE_Converter Plugin: https://github.com/FaigerSYS/MapImageEngine/tree/master/MIE_Converter
+	  - Nutze Online Konverter (Wenn das Plugin nicht klappt): http://mie-converter.ml
+  1.1. Du musst die Größe des Bildes nicht ändern auf 128x128 . Der Konverter tut dies schon für dich
+  1.2. Du musst das Bild nicht schneiden. Wähle einfach benötigte Größe in Blöcken aus
+  2. Verschiebe die Konvertierten Bilder zu 'images' Ordner des Plugins
+  3. Geschafft! Nun kannst du das Bild benutzen
+
+Wie du Bilder setzen kannst:
+  1. Schreibe '/mie list' um zu sehen was für Bilder du besitzt.
+  2. Wähle eins aus und schreibe  '/mie place <Bildname>'
+  2.1. Du kannst Flaggen für die einfache Installation von Bildern verwenden (Befehl ohne Argumente eingeben ('/mie place') um eine volle Beschreibung zu bekommen)
+  2.2. Um den Platziermodus zu verlassen tippe  '/mie exit'
+  3. Folge der Anleitung und das Bild wird gesetzt
+
+Um alle Befehle zu sehen, tippe '/mie' ein
+
+Viel Glück!
