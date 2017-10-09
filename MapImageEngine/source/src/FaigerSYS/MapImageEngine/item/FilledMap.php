@@ -75,6 +75,18 @@ class FilledMap extends Item {
 		$this->updateMapData();
 	}
 	
+	public function getImageHash() {
+		return json_decode((string) ($this->getNamedTag()->mie_data ?? null), true)['image_hash'] ?? null;
+	}
+	
+	public function getImageChunkX() {
+		return json_decode((string) ($this->getNamedTag()->mie_data ?? null), true)['x_block'] ?? null;
+	}
+	
+	public function getImageChunkY() {
+		return json_decode((string) ($this->getNamedTag()->mie_data ?? null), true)['y_block'] ?? null;
+	}
+	
 	public function getMaxStackSize() : int {
 		return 1;
 	}

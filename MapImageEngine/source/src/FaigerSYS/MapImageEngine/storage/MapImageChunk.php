@@ -101,7 +101,7 @@ class MapImageChunk {
 	}
 	
 	/**
-	 * Returns ABGR color at selected position
+	 * Returns ABGR color at specified position
 	 *
 	 * @return int
 	 */
@@ -111,7 +111,7 @@ class MapImageChunk {
 	}
 	
 	/**
-	 * Sets ABGR color at selected position
+	 * Sets ABGR color at specified position
 	 *
 	 * @param int $x
 	 * @param int $y

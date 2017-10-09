@@ -217,7 +217,6 @@ class MapImageEngine extends PluginBase implements Listener {
 	}
 	
 	/**
-	 * @priority LOW
 	 * @ignoreCancelled true
 	 */
 	public function onRequest(DataPacketReceiveEvent $e) {
