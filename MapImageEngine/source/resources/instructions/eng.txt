@@ -6,16 +6,16 @@ If you found a bug, please let me know! Submit new issue on GitHub
 How to make own image:
   1. Convert any image ('png', 'jpg' etc.)...
 	  - Using MIE_Converter plugin: https://github.com/FaigerSYS/MapImageEngine/tree/master/MIE_Converter
-	  - Using online converter (if the plugin not works): http://mie-converter.ml
-  1.1. You do not need to change image size to 128x128 . Converter itself will change the size
-  1.2. You do not neet to chunk image. Just select needed size in blocks
-  2. Converted image move to folder 'images' of this plugin
+	  - Using online converter (if the plugin does not work): http://mie-converter.ml
+  1.1. You don't need to change image size to 128x128. Converter itself will change the size
+  1.2. You don't need chunk image. Just select required size in blocks
+  2. Move converted image to folder 'images' of this plugin
   3. Done! Now you can use this image
 
 How to install image:
   1. Enter '/mie list' to view the list of available images
   2. Choose one of them and enter '/mie place <image name>'
-  2.1. You can use flags for easy installation of images  (enter command without arguments ('/mie place') to get a full description)
+  2.1. You can use flags for easy installation of images (enter command without arguments ('/mie place') to get a full description)
   2.2. To leave the placement mode enter '/mie exit'
   3. Follow the instructions and the picture will be installed
 

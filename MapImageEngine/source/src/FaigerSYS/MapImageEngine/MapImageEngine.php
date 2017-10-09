@@ -184,7 +184,7 @@ class MapImageEngine extends PluginBase implements Listener {
 				$state = $storage->registerImage($image, true, $name);
 				switch ($state) {
 					case ImageStorage::R_OK:
-						$this->getLogger()->info(CLR::GREEN . TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.succesfull'));
+						$this->getLogger()->info(CLR::GREEN . TS::translate('image-loader.prefix', $file) . TS::translate('image-loader.success'));
 						break;
 						
 					case ImageStorage::R_UUID_EXISTS:
