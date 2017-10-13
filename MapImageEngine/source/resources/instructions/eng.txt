@@ -8,7 +8,7 @@ How to make own image:
 	  - Using MIE_Converter plugin: https://github.com/FaigerSYS/MapImageEngine/tree/master/MIE_Converter
 	  - Using online converter (if the plugin does not work): http://mie-converter.ml
   1.1. You don't need to change image size to 128x128. Converter itself will change the size
-  1.2. You don't need chunk image. Just select required size in blocks
+  1.2. You don't need to chunk image. Just select required size in blocks
   2. Move converted image to folder 'images' of this plugin
   3. Done! Now you can use this image
 
