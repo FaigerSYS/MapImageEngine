@@ -114,9 +114,10 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 	
 	/**
 	 * @priority LOW
+	 * @ignoreCancelled true
 	 */
 	public function onTouch(PlayerInteractEvent $e) {
-		if ($e->isCancelled() || $e->getAction() !== PlayerInteractEvent::RIGHT_CLICK_BLOCK) {
+		if ($e->getAction() !== PlayerInteractEvent::RIGHT_CLICK_BLOCK) {
 			return;
 		}
 		

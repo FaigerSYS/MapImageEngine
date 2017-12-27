@@ -17,14 +17,14 @@ class FilledMap extends Item {
 		parent::__construct(self::FILLED_MAP ?? 358, 0, 1, 'Map');
 	}
 	
-	public function setCompoundTag($tag) {
+	public function setCompoundTag($tag) : Item {
 		parent::setCompoundTag($tag);
 		$this->updateMapData();
 		
 		return $this;
 	}
 	
-	public function setNamedTag(CompoundTag $tag) {
+	public function setNamedTag(CompoundTag $tag) : Item {
 		parent::setNamedTag($tag);
 		$this->updateMapData();
 		

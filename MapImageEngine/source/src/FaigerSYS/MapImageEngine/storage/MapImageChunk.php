@@ -11,7 +11,6 @@ use FaigerSYS\MapImageEngine\pocketmine_bc\ClientboundMapItemDataPacket;
 
 use FaigerSYS\Toolkit\PacketCompressor;
 
-// TO-DO: add more API methods, return ClientboundMapItemDataPacket to the original form
 class MapImageChunk {
 	
 	/**
@@ -82,7 +81,7 @@ class MapImageChunk {
 	 */
 	public function getRGBA(int $x, int $y) : int {
 		$this->data->offset = $this->getStartOffset($x, $y);
-		return $this->data->getInt();
+		return (int) $this->data->getInt();
 	}
 	
 	/**
@@ -107,7 +106,7 @@ class MapImageChunk {
 	 */
 	public function getABGR(int $x, int $y) : int {
 		$this->data->offset = $this->getStartOffset($x, $y);
-		return $this->data->getLInt() & 0xffffffff;
+		return (int) $this->data->getLInt() & 0xffffffff;
 	}
 	
 	/**
@@ -135,7 +134,7 @@ class MapImageChunk {
 		$this->data->offset = 0;
 		for ($y = 0; $y < $this->height; $y++) {
 			for ($x = 0; $x < $this->width; $x++) {
-				$colors[$y][$x] = $this->data->getInt();
+				$colors[$y][$x] = (int) $this->data->getInt();
 			}
 		}
 		
