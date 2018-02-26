@@ -208,7 +208,7 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 									$player->sendMessage(self::MSG_PREFIX . TS::translate('command.place.success'));
 								}
 							} else {
-								$sender->sendMessage(self::MSG_PREFIX . TS::translate('command.place.not-flat'));
+								$player->sendMessage(self::MSG_PREFIX . TS::translate('command.place.not-flat'));
 							}
 						}
 						
