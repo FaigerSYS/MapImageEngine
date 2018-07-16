@@ -1,61 +1,64 @@
 <?php
 namespace FaigerSYS\MIE_Converter;
 
+use pocketmine\utils\UUID;
+use pocketmine\utils\BinaryStream;
+
 class MapImageUtils {
 	
 	const MAP_WIDTH = 128;
-	const MAP_HEIGHT = 128;
+	const MAP_HEIGTH = 128;
 	
-	const CURRENT_API = 1;
+	const CURRENT_VERSION = 2;
 	
-	public static function generateImageData($image, int $x_explode, int $y_explode) {
-		if (is_resource($image) && get_resource_type($image) === 'gd' && $x_explode > 0 && $y_explode > 0) {
-			$data = [];
-			$data['api'] = self::CURRENT_API;
-			$data['type'] = 0;
-			
-			$old_image = $image;
-			$old_width = imagesx($old_image);
-			$old_height = imagesy($old_image);
-			
-			$width = self::MAP_WIDTH * $x_explode;
-			$height = self::MAP_HEIGHT * $y_explode;
-			
-			$image = imagescale($image, $width, $height);
-			
-			$images = [];
-			for ($y_block = 0; $y_block < $y_explode; $y_block++) {
-				for ($x_block = 0; $x_block < $x_explode; $x_block++) {
-					$colors = [];
-					
-					for ($y = 0; $y < self::MAP_HEIGHT; $y++) {
-						for ($x = 0; $x < self::MAP_WIDTH; $x++) {
-							$raw_color = imagecolorsforindex($image, imagecolorat($image, $x + ($x_block * self::MAP_WIDTH), $y + ($y_block * self::MAP_HEIGHT)));
-							$r = $raw_color['red'];
-							$g = $raw_color['green'];
-							$b = $raw_color['blue'];
-							$a = $raw_color['alpha'] === 0 ? 255 : ~$raw_color['alpha'] << 1 & 0xff;
-							
-							$colors[$y][$x] = ($a << 24) | ($b << 16) | ($g << 8) | $r;
-						}
+	public static function generateImageData($image, int $blocks_width, int $blocks_height, int $compression_level = 0, int $resize_type = IMG_NEAREST_NEIGHBOUR, int $chunk_width = self::MAP_WIDTH, int $chunk_height = self::MAP_HEIGTH) {
+		if (!is_resource($image) || $blocks_width < 0 || $blocks_height < 0 || $chunk_width < 0 || $chunk_height < 0) {
+			return;
+		}
+		
+		$old_image = $image;
+		$old_width = imagesx($old_image);
+		$old_heigth = imagesy($old_image);
+		
+		$width = $chunk_width * $blocks_width;
+		$height = $chunk_height * $blocks_height;
+		
+		$image = imagescale($image, $width, $height, $resize_type);
+		
+		$data = new BinaryStream();
+		$data->put('MIEI');
+		$data->putInt(self::CURRENT_VERSION);
+		$data->putByte((int) ($compression_level > 0));
+		
+		$buffer = new BinaryStream();
+		$buffer->put(UUID::fromRandom()->toBinary());
+		$buffer->putInt($blocks_width);
+		$buffer->putInt($blocks_height);
+		
+		for ($y_b = 0; $y_b < $blocks_height; $y_b++) {
+			for ($x_b = 0; $x_b < $blocks_width; $x_b++) {
+				$buffer->putInt($chunk_width);
+				$buffer->putInt($chunk_height);
+				
+				for ($y = 0; $y < $chunk_width; $y++) {
+					for ($x = 0; $x < $chunk_height; $x++) {
+						$color = imagecolorsforindex($image, imagecolorat($image, $x + ($x_b * $chunk_width), $y + ($y_b * $chunk_height)));
+						$color = chr($color['red']) . chr($color['green']) . chr($color['blue']) . chr($color['alpha'] === 0 ? 255 : ~$color['alpha'] << 1 & 0xff);
+						
+						$buffer->put($color);
 					}
-					
-					// This is needed to reduce the RAM usage for converting (I know what you want to say...)
-					$colors = json_encode($colors);
-					$colors = gzdeflate($colors, 6);
-					$colors = base64_encode($colors);
-					$images[$y_block][$x_block] = $colors;
 				}
 			}
-			
-			imagedestroy($image);
-			
-			$data['blocks'] = $images;
-			
-			$data = json_encode($data);
-			$data = gzdeflate($data, 6);
-			return $data;
 		}
+		
+		imagedestroy($image);
+		
+		$buffer = $buffer->buffer;
+		if ($compression_level > 0) {
+			$buffer = zlib_encode($buffer, ZLIB_ENCODING_DEFLATE, min($compression_level, 9));
+		}
+		$data->put($buffer);
+		
+		return $data->buffer;
 	}
-	
 }

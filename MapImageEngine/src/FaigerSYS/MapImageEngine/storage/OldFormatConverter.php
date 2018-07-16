@@ -12,7 +12,7 @@ class OldFormatConverter {
 		try {
 			$buffer = new BinaryStream;
 			$buffer->put('MIEI');
-			$buffer->putInt(MapImage::CURRENT_API);
+			$buffer->putInt(MapImage::CURRENT_VERSION);
 			$buffer->putByte(0);
 			$buffer->put(UUID::fromRandom()->toBinary());
 			

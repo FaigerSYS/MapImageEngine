@@ -80,7 +80,7 @@ class CustomClientboundMapItemDataPacket extends DataPacket {
 	/** @var string */
 	public $colors;
 	
-	protected function decodePayload() {
+	protected function decodePayload() : void {
 		$this->mapId = $this->getEntityUniqueId();
 		$this->type = $this->getUnsignedVarInt();
 		$this->dimensionId = $this->getByte();
@@ -125,7 +125,7 @@ class CustomClientboundMapItemDataPacket extends DataPacket {
 		}
 	}
 	
-	protected function encodePayload() {
+	protected function encodePayload() : void {
 		$this->putEntityUniqueId($this->mapId);
 		
 		$type = 0;
@@ -184,7 +184,7 @@ class CustomClientboundMapItemDataPacket extends DataPacket {
 	}
 	
 	public function handle(NetworkSession $session) : bool {
-		return $session->handleClientboundMapItemData($this);
+		return true;
 	}
 	
 	public static function prepareColors(array $colors, int $width, int $height) {

@@ -19,16 +19,16 @@ class MapImage {
 	/**
 	 * Image has unsupported API version
 	 */
-	const R_UNSUPPORTED_API = 3;
+	const R_UNSUPPORTED_VERSIONS = 3;
 	
 	/**
-	 * Curren API version of MIE image binary
+	 * Curren version of MIE image binary
 	 */
-	const CURRENT_API = 2;
+	const CURRENT_VERSION = 2;
 	/**
-	 * Array of supported API versions of MIE image binary
+	 * List of supported versions of MIE image binary
 	 */
-	const SUPPORTED_API = [2];
+	const SUPPORTED_VERSIONS = [2];
 	
 	/** @var int */
 	private $blocks_width;
@@ -230,8 +230,8 @@ class MapImage {
 			}
 			
 			$api = $buffer->getInt();
-			if (!in_array($api, self::SUPPORTED_API)) {
-				$state = self::R_UNSUPPORTED_API;
+			if (!in_array($api, self::SUPPORTED_VERSIONS)) {
+				$state = self::R_UNSUPPORTED_VERSIONS;
 				return;
 			}
 			

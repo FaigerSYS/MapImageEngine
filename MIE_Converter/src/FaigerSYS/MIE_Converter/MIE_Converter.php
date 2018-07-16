@@ -10,7 +10,7 @@ use pocketmine\utils\TextFormat as CLR;
 
 class MIE_Converter extends PluginBase {
 	
-	const MSG_PREFIX = CLR::BOLD . CLR::GOLD . '[' . CLR::RESET . CLR::GREEN . 'MIE' . CLR::BOLD . CLR::GOLD . ']' . CLR::RESET . CLR::GRAY . ' ';
+	const MSG_PREFIX = CLR::BOLD . CLR::GOLD . '[' . CLR::RESET . CLR::GREEN . 'MIE Converter' . CLR::BOLD . CLR::GOLD . ']' . CLR::RESET . CLR::GRAY . ' ';
 	
 	public function onEnable() {
 		$this->getLogger()->info(CLR::GOLD . 'MIE_Converter enabling...');
@@ -27,7 +27,7 @@ class MIE_Converter extends PluginBase {
 		@mkdir($path . 'to_convert');
 		@mkdir($path . 'converted');
 		
-		$this->getLogger()->info(CLR::GOLD . 'MIE_Converter enabled! MIE API: ' . MapImageUtils::CURRENT_API);
+		$this->getLogger()->info(CLR::GOLD . 'MIE_Converter enabled! MIEI version: ' . MapImageUtils::CURRENT_VERSION);
 	}
 	
 	public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool {
@@ -67,10 +67,10 @@ class MIE_Converter extends PluginBase {
 		
 		$sender->sendMessage(self::MSG_PREFIX . 'Converting image...');
 		
-		$data = MapImageUtils::generateImageData($image, $x, $y);
+		$data = MapImageUtils::generateImageData($image, $x, $y, 7);
 		imagedestroy($image);
 		
-		$path = $this->getDataFolder() . 'converted/' . pathinfo($path)['filename'] . '_' . $x . 'x' . $y . '.mie';
+		$path = $this->getDataFolder() . 'converted/' . pathinfo($path)['filename'] . '_' . $x . 'x' . $y . '.miei';
 		file_put_contents($path, $data);
 		
 		$sender->sendMessage(self::MSG_PREFIX . 'Done! Image location: ' . CLR::WHITE . $path);
