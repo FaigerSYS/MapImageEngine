@@ -28,6 +28,7 @@ namespace FaigerSYS\MapImageEngine\packet;
 
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
+use pocketmine\network\mcpe\protocol\types\MapTrackedObject;
 
 use pocketmine\utils\Color;
 use pocketmine\utils\Binary;
@@ -46,37 +47,29 @@ class CustomClientboundMapItemDataPacket extends DataPacket {
 	
 	/** @var int */
 	public $mapId;
-	
 	/** @var int */
 	public $type;
-	
 	/** @var int */
 	public $dimensionId = DimensionIds::OVERWORLD;
 	
 	/** @var int[] */
 	public $eids = [];
-	
 	/** @var int */
 	public $scale;
 	
-	/** @var int[] */
-	public $decorationEntityUniqueIds = [];
-	
+	/** @var MapTrackedObject[] */
+	public $trackedEntities = [];
 	/** @var array */
 	public $decorations = [];
 
 	/** @var int */
 	public $width;
-	
 	/** @var int */
 	public $height;
-	
 	/** @var int */
 	public $xOffset = 0;
-	
 	/** @var int */
 	public $yOffset = 0;
-	
 	/** @var string */
 	public $colors;
 	
@@ -98,7 +91,16 @@ class CustomClientboundMapItemDataPacket extends DataPacket {
 		
 		if (($this->type & self::BITFLAG_DECORATION_UPDATE) !== 0) {
 			for ($i = 0, $count = $this->getUnsignedVarInt(); $i < $count; ++$i) {
-				$this->decorationEntityUniqueIds[] = $this->getEntityUniqueId();
+				$object = new MapTrackedObject();
+				$object->type = $this->getLInt();
+				if ($object->type === MapTrackedObject::TYPE_BLOCK) {
+					$this->getBlockPosition($object->x, $object->y, $object->z);
+				} elseif ($object->type === MapTrackedObject::TYPE_ENTITY) {
+					$object->entityUniqueId = $this->getEntityUniqueId();
+				} else {
+					throw new \UnexpectedValueException("Unknown map object type");
+				}
+				$this->trackedEntities[] = $object;
 			}
 			
 			for ($i = 0, $count = $this->getUnsignedVarInt(); $i < $count; ++$i) {
@@ -154,9 +156,16 @@ class CustomClientboundMapItemDataPacket extends DataPacket {
 		}
 		
 		if (($type & self::BITFLAG_DECORATION_UPDATE) !== 0) {
-			$this->putUnsignedVarInt(count($this->decorationEntityUniqueIds));
-			foreach ($this->decorationEntityUniqueIds as $id) {
-				$this->putEntityUniqueId($id);
+			$this->putUnsignedVarInt(count($this->trackedEntities));
+			foreach ($this->trackedEntities as $object) {
+				$this->putLInt($object->type);
+				if ($object->type === MapTrackedObject::TYPE_BLOCK) {
+					$this->putBlockPosition($object->x, $object->y, $object->z);
+				} elseif ($object->type === MapTrackedObject::TYPE_ENTITY) {
+					$this->putEntityUniqueId($object->entityUniqueId);
+				} else {
+					throw new \UnexpectedValueException("Unknown map object type");
+				}
 			}
 			
 			$this->putUnsignedVarInt($decorationCount);
@@ -205,7 +214,7 @@ class CustomClientboundMapItemDataPacket extends DataPacket {
 		$original->dimensionId = $custom->dimensionId = DimensionIds::OVERWORLD;
 		$original->eids = $custom->eids = [];
 		$original->scale = $custom->scale = 0;
-		$original->decorationEntityUniqueIds = $custom->decorationEntityUniqueIds = [];
+		$original->trackedEntities = $custom->trackedEntities = [];
 		$original->decorations = $custom->decorations = [];
 		$original->width = $custom->width = 128;
 		$original->height = $custom->height = 128;

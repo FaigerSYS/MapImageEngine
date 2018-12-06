@@ -1,7 +1,7 @@
 name: MapImageEngine
 main: FaigerSYS\MapImageEngine\MapImageEngine
-version: "1.1.1"
-api: ["3.0.0", "4.0.0"]
+version: "1.1.2"
+api: ["3.0.0"]
 load: POSTWORLD
 author: FaigerSYS
 description: "Image engine for MC:BE servers"
