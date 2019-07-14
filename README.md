@@ -8,3 +8,9 @@ MIE_Animations|Animated images (not soon)
 [MIE_Converter](https://github.com/FaigerSYS/MapImageEngine/tree/master/MIE_Converter)|Addon for MapImageEngine to convert images to .mie format
 
 I can not translate the plugin into all languages. I can also have grammatical mistakes in English, so any "language" contribution is welcomed :)
+
+## Best users
+|#|User|Shox's|
+|---|---|---|
+|1|Encritary|500|
+|2|Yexeed|125|

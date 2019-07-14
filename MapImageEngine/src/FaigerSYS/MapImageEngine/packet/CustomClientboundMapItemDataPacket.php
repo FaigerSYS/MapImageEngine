@@ -51,7 +51,9 @@ class CustomClientboundMapItemDataPacket extends DataPacket {
 	public $type;
 	/** @var int */
 	public $dimensionId = DimensionIds::OVERWORLD;
-	
+	/** @var bool */
+	public $isLocked = false;
+
 	/** @var int[] */
 	public $eids = [];
 	/** @var int */
@@ -77,7 +79,8 @@ class CustomClientboundMapItemDataPacket extends DataPacket {
 		$this->mapId = $this->getEntityUniqueId();
 		$this->type = $this->getUnsignedVarInt();
 		$this->dimensionId = $this->getByte();
-		
+		$this->isLocked = $this->getBool();
+
 		if (($this->type & 0x08) !== 0) {
 			$count = $this->getUnsignedVarInt();
 			for ($i = 0; $i < $count; ++$i) {
@@ -143,6 +146,7 @@ class CustomClientboundMapItemDataPacket extends DataPacket {
 		
 		$this->putUnsignedVarInt($type);
 		$this->putByte($this->dimensionId);
+		$this->putBool($this->isLocked);
 		
 		if (($type & 0x08) !== 0) {
 			$this->putUnsignedVarInt($eidsCount);
