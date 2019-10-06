@@ -190,9 +190,8 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 										
 										$frame->setItem($map);
 									}
-									
-									$player->sendMessage(self::MSG_PREFIX . TS::translate('command.place.success'));
 								}
+								$player->sendMessage(self::MSG_PREFIX . TS::translate('command.place.success'));
 							}
 						}
 						

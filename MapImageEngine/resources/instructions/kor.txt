@@ -6,7 +6,7 @@ GitHub 페이지: https://github.com/FaigerSYS/MapImageEngine
 자신의 이미지 제작 방법:
   1. 이미지 파일을 변환하세요('png', 'jpg' 기타 등등)...
 	  - MIE_Convert 플러그인 사용: https://github.com/FaigerSYS/MapImageEngine/tree/master/MIE_Converter
-	  - 온라인 변환기 사용(플러그인 미작동 시): https://mie-converter.000webhostapp.com
+	  - 온라인 변환기 사용(플러그인 미작동 시): https://faigersys.github.io/mie-converter
   1.1 이미지 크기는 128x128로 변경하지 않아도 됩니다. 변환기가 크기를 변경합니다
   1.2 이미지는 나누지 않아도 됩니다. 블록으로 필요한 크기를 선택하기만 하면 됩니다
   2. 변환된 이미지 파일을 이 플러그인의 'images' 폴더에 넣어주세요
