@@ -61,7 +61,7 @@ class MapImageEngine extends PluginBase implements Listener {
 		
 		@mkdir($dir = $path . 'instructions/');
 		foreach (scandir($r_dir = $this->getFile() . '/resources/instructions/') as $file) {
-			if ($file{0} !== '.') {
+			if ($file[0] !== '.') {
 				copy($r_dir . $file, $dir . $file);
 			}
 		} 
