@@ -133,7 +133,7 @@ class MapImageChunk {
 		$this->data->buffer[$pos++] = chr($color >> 24 & 0xff);
 		$this->data->buffer[$pos++] = chr($color >> 16 & 0xff);
 		$this->data->buffer[$pos++] = chr($color >> 8  & 0xff);
-		$this->data->buffer[$pos] = chr($color       & 0xff);
+		$this->data->buffer[$pos]   = chr($color       & 0xff);
 	}
 	
 	/**
