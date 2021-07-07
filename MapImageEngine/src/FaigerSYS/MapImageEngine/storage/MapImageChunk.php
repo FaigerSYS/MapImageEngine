@@ -105,10 +105,10 @@ class MapImageChunk {
 	 */
 	public function setRGBA(int $x, int $y, int $color) {
 		$pos = $this->getStartOffset($x, $y);
-		$this->data->buffer{$pos++} = chr($color       & 0xff);
-		$this->data->buffer{$pos++} = chr($color >> 8  & 0xff);
-		$this->data->buffer{$pos++} = chr($color >> 16 & 0xff);
-		$this->data->buffer{$pos}   = chr($color >> 24 & 0xff);
+		$this->data->buffer[$pos++] = chr($color       & 0xff);
+		$this->data->buffer[$pos++] = chr($color >> 8  & 0xff);
+		$this->data->buffer[$pos++] = chr($color >> 16 & 0xff);
+		$this->data->buffer[$pos]   = chr($color >> 24 & 0xff);
 	}
 	
 	/**
@@ -130,10 +130,10 @@ class MapImageChunk {
 	 */
 	public function setABGR(int $x, int $y, int $color) {
 		$pos = $this->getStartOffset($x, $y);
-		$this->data->buffer{$pos++} = chr($color >> 24 & 0xff);
-		$this->data->buffer{$pos++} = chr($color >> 16 & 0xff);
-		$this->data->buffer{$pos++} = chr($color >> 8  & 0xff);
-		$this->data->buffer{$pos}   = chr($color       & 0xff);
+		$this->data->buffer[$pos++] = chr($color >> 24 & 0xff);
+		$this->data->buffer[$pos++] = chr($color >> 16 & 0xff);
+		$this->data->buffer[$pos++] = chr($color >> 8  & 0xff);
+		$this->data->buffer[$pos]   = chr($color       & 0xff);
 	}
 	
 	/**

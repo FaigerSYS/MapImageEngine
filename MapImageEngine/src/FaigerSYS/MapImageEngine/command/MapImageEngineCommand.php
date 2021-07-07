@@ -63,7 +63,7 @@ class MapImageEngineCommand extends Command implements PluginIdentifiableCommand
 						$new_list[] = $name . CLR::RESET . ' ' . CLR::AQUA  . '(' . CLR::DARK_GREEN . $w . CLR::AQUA . 'x'.  CLR::DARK_GREEN . $h . CLR::AQUA . ')';
 					}
 					
-					$list = CLR::WHITE . CLR::ITALIC . implode($new_list, CLR::GRAY . ', ' . CLR::WHITE . CLR::ITALIC) . CLR::GRAY;
+					$list = CLR::WHITE . CLR::ITALIC . implode(CLR::GRAY . ', ' . CLR::WHITE . CLR::ITALIC, $new_list) . CLR::GRAY;
 					$sender->sendMessage(self::MSG_PREFIX . TS::translate('command.list') . $list);
 				}
 				break;
