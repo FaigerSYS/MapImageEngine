@@ -1,0 +1,24 @@
+MapImageEngine wurde von FaigerSYS programmiert.
+Github: https://github.com/FaigerSYS/MapImageEngine
+
+Senden sie mir ein Issue falls sie ein Bug finden. Danke!
+
+Erstellen sie ein Bild:
+  1. Konvertiere  sie alle Bildtypen ('png', 'jpg' etc.)...
+	  - Nutzen sie das Plugin MIE_Converter: https://github.com/FaigerSYS/MapImageEngine/tree/master/MIE_Converter
+	  - Wenn das Plugin nicht funktioniert nutzen sie den Online Konverter: http://mie-converter.ml
+  1.1. Sie müssen die größe des Bildes nicht auf 128x128 ändern. Die Konverter machen es selber.
+  1.2. Wählen sie einfach die größen in Blöcken!
+  2. Verschieben sie das konvertierte Bild in den Ordner 'images' im Plugin Ordner.
+  3. Fertig! Jetzt können sie das Bild nutzen.
+
+Installiere ein Bild:
+  1. Führen sie den Befehl '/mie list' aus um eine liste aller Bilder zu erhalten.
+  2. Wählen sie ein Bild aus und führen sie den Befehl '/mie place <image name>' aus.
+  2.1. Sie können Flags nutzen um die Installation zu vereinfachen (Führe den Befehl ohne Argumente aus ('/mie place') um eine Beschreibung zu erhalten)
+  2.2. Um den Platzierungs Modus zu deaktivieren Führe sie '/mie exit' aus.
+  3. Folgen Sie den Anweisungen und das Bild wird installiert
+
+Um eine komplette Liste aller Befehle zu erhalten. Führen sie '/mie' aus
+
+Viel Glück!
