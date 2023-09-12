@@ -12,7 +12,7 @@ class MapImageUtils {
 	const CURRENT_VERSION = 2;
 	
 	public static function generateImageData($image, int $blocks_width, int $blocks_height, int $compression_level = 0, int $resize_type = IMG_NEAREST_NEIGHBOUR, int $chunk_width = self::MAP_WIDTH, int $chunk_height = self::MAP_HEIGTH) {
-		if (!is_resource($image) || $blocks_width < 0 || $blocks_height < 0 || $chunk_width < 0 || $chunk_height < 0) {
+		if ($image === false || $blocks_width < 0 || $blocks_height < 0 || $chunk_width < 0 || $chunk_height < 0) {
 			return;
 		}
 		
